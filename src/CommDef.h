@@ -51,7 +51,7 @@
 
 inline
 std::shared_ptr<std::istream>
-open_istream(const std::string &fname, std::ios_base::openmode mode = std::ios_base::in)
+open_input(const std::string &fname, std::ios_base::openmode mode = std::ios_base::in)
 {
     std::shared_ptr<std::istream> ret;
 
@@ -65,7 +65,7 @@ open_istream(const std::string &fname, std::ios_base::openmode mode = std::ios_b
 
 inline
 std::shared_ptr<std::ostream>
-open_ostream(const std::string &fname, std::ios_base::openmode mode = std::ios_base::out)
+open_output(const std::string &fname, std::ios_base::openmode mode = std::ios_base::out)
 {
     std::shared_ptr<std::ostream> ret;
 
