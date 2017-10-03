@@ -36,8 +36,14 @@ struct ExtDataItemParser : DictItemParser {
 
 class LogParser {
 public:
+    typedef std::map<std::string, std::shared_ptr<ItemParser> >     ItemParserDict;
+
+public:
     virtual void parse(const std::string &line, LogReq &req) = 0;
     static void parse_dict(const std::string &text, std::map<std::string, std::string> &result);
+
+protected:
+    ItemParserDict    m_dictItemParser;
 };
 
 /*
@@ -45,27 +51,8 @@ public:
  */
 class QsLogParser : public LogParser {
 public:
-    typedef std::map<std::string, std::shared_ptr<ItemParser> >     ItemParserDict;
-
-public:
+    QsLogParser();
     void parse(const std::string &line, LogReq &req) override;
-
-private:
-    const ItemParserDict    m_dictItemParser = {
-        {"query", std::make_shared<ItemParser>()},
-        {"category", std::make_shared<ItemParser>()},
-        {"location", std::make_shared<ItemParser>()},
-        {"orderby", std::make_shared<ItemParser>()},
-        {"if_name", std::make_shared<ItemParser>()},
-        {"reqid", std::make_shared<IntItemParser>()},
-        {"cityid", std::make_shared<IntItemParser>()},
-        {"offset", std::make_shared<IntItemParser>()},
-        {"limit", std::make_shared<IntItemParser>()},
-        {"filter", std::make_shared<DictItemParser>()},
-        {"counter", std::make_shared<DictItemParser>()},
-        {"control", std::make_shared<ControlItemParser>()},
-        {"ext_data", std::make_shared<ExtDataItemParser>()}
-    };
 };
 
 #if 0

@@ -80,6 +80,23 @@ void LogParser::parse_dict(const std::string &text, std::map<std::string, std::s
     } // if
 }
 
+QsLogParser::QsLogParser()
+{
+    m_dictItemParser["query"] = std::make_shared<ItemParser>();
+    m_dictItemParser["category"] = std::make_shared<ItemParser>();
+    m_dictItemParser["location"] = std::make_shared<ItemParser>();
+    m_dictItemParser["orderby"] = std::make_shared<ItemParser>();
+    m_dictItemParser["if_name"] = std::make_shared<ItemParser>();
+    m_dictItemParser["reqid"] = std::make_shared<IntItemParser>();
+    m_dictItemParser["cityid"] = std::make_shared<IntItemParser>();
+    m_dictItemParser["offset"] = std::make_shared<IntItemParser>();
+    m_dictItemParser["limit"] = std::make_shared<IntItemParser>();
+    m_dictItemParser["filter"] = std::make_shared<DictItemParser>();
+    m_dictItemParser["counter"] = std::make_shared<DictItemParser>();
+    m_dictItemParser["control"] = std::make_shared<ControlItemParser>();
+    m_dictItemParser["ext_data"] = std::make_shared<ExtDataItemParser>();
+}
+
 // #if 0
 void QsLogParser::parse(const std::string &line, LogReq &req)
 {
