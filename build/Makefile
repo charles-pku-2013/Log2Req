@@ -177,6 +177,33 @@ src/LogReq.cpp.s:
 	$(MAKE) -f CMakeFiles/log2req.bin.dir/build.make CMakeFiles/log2req.bin.dir/src/LogReq.cpp.s
 .PHONY : src/LogReq.cpp.s
 
+src/LogReqClassifier.o: src/LogReqClassifier.cpp.o
+
+.PHONY : src/LogReqClassifier.o
+
+# target to build an object file
+src/LogReqClassifier.cpp.o:
+	$(MAKE) -f CMakeFiles/log2req.bin.dir/build.make CMakeFiles/log2req.bin.dir/src/LogReqClassifier.cpp.o
+.PHONY : src/LogReqClassifier.cpp.o
+
+src/LogReqClassifier.i: src/LogReqClassifier.cpp.i
+
+.PHONY : src/LogReqClassifier.i
+
+# target to preprocess a source file
+src/LogReqClassifier.cpp.i:
+	$(MAKE) -f CMakeFiles/log2req.bin.dir/build.make CMakeFiles/log2req.bin.dir/src/LogReqClassifier.cpp.i
+.PHONY : src/LogReqClassifier.cpp.i
+
+src/LogReqClassifier.s: src/LogReqClassifier.cpp.s
+
+.PHONY : src/LogReqClassifier.s
+
+# target to generate assembly for a file
+src/LogReqClassifier.cpp.s:
+	$(MAKE) -f CMakeFiles/log2req.bin.dir/build.make CMakeFiles/log2req.bin.dir/src/LogReqClassifier.cpp.s
+.PHONY : src/LogReqClassifier.cpp.s
+
 src/MTSearch_thrift/gen-cpp/MTSearch.o: src/MTSearch_thrift/gen-cpp/MTSearch.cpp.o
 
 .PHONY : src/MTSearch_thrift/gen-cpp/MTSearch.o
@@ -300,6 +327,9 @@ help:
 	@echo "... src/LogReq.o"
 	@echo "... src/LogReq.i"
 	@echo "... src/LogReq.s"
+	@echo "... src/LogReqClassifier.o"
+	@echo "... src/LogReqClassifier.i"
+	@echo "... src/LogReqClassifier.s"
 	@echo "... src/MTSearch_thrift/gen-cpp/MTSearch.o"
 	@echo "... src/MTSearch_thrift/gen-cpp/MTSearch.i"
 	@echo "... src/MTSearch_thrift/gen-cpp/MTSearch.s"

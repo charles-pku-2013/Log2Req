@@ -4,8 +4,8 @@
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include "CommDef.h"
-#include "LogReq.h"
 #include "LogParser.h"
+#include "LogReqClassifier.h"
 
 using namespace std;
 
@@ -72,6 +72,21 @@ void test_parse_map()
     for (const auto &kv : result)
         cout << kv.first << " = " << kv.second << endl;
 }
+
+void test_cmp_string_map()
+{
+    LogReqCmp::StringMap m1, m2;
+    m1["a"] = "1";
+    m1["b"] = "2";
+    m1["c"] = "3";
+    m2["a"] = "1";
+    m2["b"] = "3";
+    m2["c"] = "3";
+    // m2["d"] = "4";
+
+    cout << LogReqCmp::cmp_string_map(m1, m2) << endl;
+    cout << LogReqCmp::cmp_string_map_key_only(m1, m2) << endl;
+}
 } // namespace Test
 
 void log_2_req_json()
@@ -102,6 +117,41 @@ void log_2_req_json()
     cout << Json::StyledWriter().write(root) << flush;
 }
 
+
+void log_classify()
+{
+    string      line;
+    size_t      lineNO = 0;
+
+    std::shared_ptr<LogParser>  parser = std::make_shared<QsLogParser>();
+    std::shared_ptr<LogReqCmp>  pLogCmp = std::make_shared<QsLogReqCmp>();
+    LogReqClassifier            classifier(pLogCmp.get());
+
+    while (getline(cin, line)) {
+        ++lineNO;
+        boost::trim(line);
+        if (line.empty()) continue;
+        auto pReq = std::make_shared<LogReq>();
+        try {
+            parser->parse(line, *pReq);
+        } catch (const std::exception &ex) {
+            LOG(ERROR) << "Error in line " << lineNO << "! " << ex.what();
+            continue;
+        } // try
+        pReq->setNO(lineNO);
+        classifier.addItem(pReq);
+    } // while
+
+    LOG(INFO) << classifier.classified().size() << " classified requests.";
+    Json::Value root;
+    for (auto pReq : classifier.classified()) {
+        Json::Value jsVal;
+        pReq->toJson(jsVal);
+        root.append(jsVal);
+    } // for
+    cout << Json::StyledWriter().write(root) << flush;
+}
+
 int main(int argc, char **argv)
 try {
     google::InitGoogleLogging(argv[0]);
@@ -111,8 +161,10 @@ try {
     // Test::test_log_request();
     // Test::test_map2json();
     // Test::test_parse_map();
+    // Test::test_cmp_string_map();
     // exit(0);
-    log_2_req_json();
+    // log_2_req_json();
+    log_classify();
 
     return 0;
 

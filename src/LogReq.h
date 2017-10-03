@@ -2,6 +2,7 @@
 #define _LOG_REQ_H_
 
 #include "MTSearch.h"
+#include <memory>
 
 #ifdef ONLINE
 #include <jsoncpp/json/json.h>
@@ -11,6 +12,9 @@
 
 
 class LogReq {
+public:
+    typedef std::shared_ptr<LogReq>     pointer;
+
 public:
     typedef void (SearchQueryReq::*StringSetter)(const std::string&);
     typedef void (SearchQueryReq::*IntSetter)(const int32_t);
@@ -79,6 +83,8 @@ public:
 
     SearchQueryReq& query() { return m_SearchQueryReq; }
     const SearchQueryReq& query() const { return m_SearchQueryReq; }
+
+    const std::string& ifName() const { return m_strIfName; }
 
     void setNO(std::size_t no)
     {m_nNO = no;}

@@ -68,10 +68,12 @@ set(SRC_DIR ${PROJECT_DIR}/src)
 set(INCLUDE ${SRC_DIR}/MTSearch_thrift/gen-cpp)
 include_directories(${INCLUDE})
 
-file(GLOB SRC ${SRC_DIR}/main.cpp 
-            ${SRC_DIR}/LogReq.cpp
-            ${SRC_DIR}/LogParser.cpp
-            ${SRC_DIR}/MTSearch_thrift/gen-cpp/*.cpp)
+# file(GLOB SRC ${SRC_DIR}/main.cpp 
+            # ${SRC_DIR}/LogReq.cpp
+            # ${SRC_DIR}/LogParser.cpp
+            # ${SRC_DIR}/MTSearch_thrift/gen-cpp/*.cpp)
+
+file(GLOB SRC ${SRC_DIR}/*.cpp ${SRC_DIR}/MTSearch_thrift/gen-cpp/*.cpp)
 
 set(LIBS glog jsoncpp thrift)
 
