@@ -1,6 +1,7 @@
 #include <glog/logging.h>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/program_options.hpp>
 #include <cstdio>
 #include "CommDef.h"
 #include "LogParser.h"
@@ -88,13 +89,37 @@ void test_cmp_string_map()
 }
 } // namespace Test
 
+
+static
+enum JobType {
+    LOG2REQ, GEN_RULES, CLASSIFY, NOT_SPECIFIED
+} g_eJobType = NOT_SPECIFIED;
+
+static std::string      g_strLogFile;
+static std::string      g_strRuleFile;
+static std::string      g_strReqFile;
+static std::string      g_strPrefix;
+
+
+static
 void log_2_req_json()
 {
+    cerr << "Convert log to request json..." << endl;
+    if (g_strLogFile.empty())
+        cerr << "logfile not specified, use stdin" << endl;
+    if (g_strReqFile.empty())
+        cerr << "reqfile not specified, use stdout" << endl;
+
+    auto pInput = open_input(g_strLogFile);
+    THROW_RUNTIME_ERROR_IF(!(*pInput), "log_2_req_json() cannot open log file \"" << g_strLogFile << "\" for reading!");
+    auto pOutput = open_output(g_strReqFile);
+    THROW_RUNTIME_ERROR_IF(!(*pOutput), "log_2_req_json() cannot open req file \"" << g_strReqFile << "\" for writting!");
+
     string      line;
     size_t      lineNO = 0;
     Json::Value root;
     std::shared_ptr<LogParser> parser = std::make_shared<QsLogParser>();
-    while (getline(cin, line)) {
+    while (getline(*pInput, line)) {
         ++lineNO;
         boost::trim(line);
         if (line.empty()) continue;
@@ -113,12 +138,24 @@ void log_2_req_json()
         root.append(jsVal);
     } // while
 
-    cout << Json::StyledWriter().write(root) << flush;
+    *pOutput << Json::StyledWriter().write(root) << flush;
 }
 
 
+static
 void gen_rules()
 {
+    cerr << "Generating classification rules..." << endl;
+    if (g_strLogFile.empty())
+        cerr << "logfile not specified, use stdin" << endl;
+    if (g_strRuleFile.empty())
+        cerr << "rule file not specified, use stdout" << endl;
+
+    auto pInput = open_input(g_strLogFile);
+    THROW_RUNTIME_ERROR_IF(!(*pInput), "gen_rules() cannot open log file \"" << g_strLogFile << "\" for reading!");
+    auto pOutput = open_output(g_strRuleFile);
+    THROW_RUNTIME_ERROR_IF(!(*pOutput), "gen_rules() cannot open rule file \"" << g_strRuleFile << "\" for writting!");
+
     string      line;
     size_t      lineNO = 0;
 
@@ -126,7 +163,7 @@ void gen_rules()
     std::shared_ptr<LogReqCmp>  pLogCmp = std::make_shared<QsLogReqCmp>();
     LogReqClassifier            classifier(pLogCmp.get());
 
-    while (getline(cin, line)) {
+    while (getline(*pInput, line)) {
         ++lineNO;
         boost::trim(line);
         if (line.empty()) continue;
@@ -159,12 +196,13 @@ void gen_rules()
         // cout << Json::StyledWriter().write(root) << flush;
         // cout << Json::FastWriter().write(root) << flush;
         for (auto &js : root)
-            cout << Json::FastWriter().write(js) << flush;
+            *pOutput << Json::FastWriter().write(js) << flush;
     } while (0);
 }
 
 
-void classify_log( const std::string &logFile,
+static
+void do_classify_log( const std::string &logFile,
             const std::string &ruleFile,
             const std::string &baseOutLogName = "")
 {
@@ -251,6 +289,66 @@ void classify_log( const std::string &logFile,
     pInput.reset();
 }
 
+
+static
+void classify_log()
+{
+    cerr << "Classify log..." << endl;
+
+    if (g_strLogFile.empty())
+        cerr << "logfile not specified, use stdin" << endl;
+
+    if (g_strRuleFile.empty()) {
+        cerr << "rule file not specified!" << endl;
+        exit(-1);
+    } // if
+
+    do_classify_log(g_strLogFile, g_strRuleFile, g_strPrefix);
+}
+
+
+static
+void parse_args(int argc, char **argv)
+{
+    namespace po = boost::program_options;
+
+    po::options_description desc(
+        BUILD_STRING("Example:\n" << 
+            argv[0] << " --log2req --log-file $logfile --req-file $reqfile\n" <<
+            argv[0] << " --gen-rules --log-file $logfile --rule-file $rulefile\n" <<
+            argv[0] << " --classify --log-file $logfile --rule-file $rulefile --prefix $prefix\n" <<
+            "\nOptions")
+    );
+
+    desc.add_options()
+        ("log2req,Q", po::bool_switch()->
+                notifier([&](bool flag){
+                    if(flag) g_eJobType = LOG2REQ;
+                }), "Convert log to online request (json)")
+        ("gen-rules,R", po::bool_switch()->
+                notifier([&](bool flag){
+                    if(flag) g_eJobType = GEN_RULES;
+                }), "generate rules that can classify log")
+        ("classify,C", po::bool_switch()->
+                notifier([&](bool flag){
+                    if(flag) g_eJobType = CLASSIFY;
+                }), "classify log based on rules")
+        ("log-file,l", po::value<string>(&g_strLogFile), "log file")
+        ("rule-file,r", po::value<string>(&g_strRuleFile), "json rules file")
+        ("req-file,q", po::value<string>(&g_strReqFile), "requests in json file")
+        ("prefix,p", po::value<string>(&g_strPrefix), "prefix file name for classification result files");
+
+    if (argc <= 1) {
+        cout << desc << endl;
+        exit(0);
+    } // if
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+}
+
+
 int main(int argc, char **argv)
 try {
     google::InitGoogleLogging(argv[0]);
@@ -263,9 +361,23 @@ try {
     // Test::test_cmp_string_map();
     // exit(0);
     
-    // log_2_req_json();
-    // gen_rules();
-    classify_log("req_10020.log", "rules_10020.json", "test/class_10020_");
+    parse_args(argc, argv);
+
+    if (g_eJobType >= NOT_SPECIFIED) {
+        cerr << "No job specified" << endl;
+        exit(-1);
+    } // if
+
+    typedef std::function<void(void)>   JobFunc;
+    map<int, JobFunc>   jobs = {
+        {LOG2REQ, log_2_req_json},
+        {GEN_RULES, gen_rules},
+        {CLASSIFY, classify_log}
+    };
+
+    auto pfn = jobs[g_eJobType];
+    THROW_RUNTIME_ERROR_IF(!pfn, "Invalid job type!");
+    pfn();
 
     return 0;
 

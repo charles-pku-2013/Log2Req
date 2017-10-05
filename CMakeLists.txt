@@ -75,7 +75,7 @@ include_directories(${INCLUDE})
 
 file(GLOB SRC ${SRC_DIR}/*.cpp ${SRC_DIR}/MTSearch_thrift/gen-cpp/*.cpp)
 
-set(LIBS glog jsoncpp thrift)
+set(LIBS glog jsoncpp thrift boost_program_options)
 
 add_executable(${target} ${SRC})
 target_link_libraries(${target} ${LIBS})

@@ -48,6 +48,9 @@
         if (cond) RET_MSG_VAL(val, args); \
     } while (0)
 
+#define BUILD_STRING(args)  \
+        (static_cast<std::ostringstream&>(std::ostringstream()  \
+                  << args << std::flush)).str()
 
 inline
 std::shared_ptr<std::istream>
